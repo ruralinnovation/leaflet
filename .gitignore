@@ -1,7 +1,6 @@
 .Rproj.user
 .Rhistory
 .RData
-node_modules
 inst/htmlwidgets/sources
 *.swp
 inst/examples/rsconnect
@@ -11,3 +10,64 @@ revdep/checks.noindex
 revdep/library.noindex
 revdep/data.sqlite
 viztest-*
+
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+
+# User-specific files
+.Ruserdata
+
+# Example code in package build process
+*-Ex.R
+
+# Output files from R CMD build
+/*.tar.gz
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+
+# knitr and R markdown default cache directories
+*_cache/
+/cache/
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+
+# R Environment Variables
+.Renviron
+.Rproj.user
+
+.exec-shiny-app.R
+.idea
+R/mapOutput.R
+R/mapTool.R
+broadband-map-tools.1
+broadband-map-tools.2
+data
+lib
+map-demo
+modules
+node_*
+package-lock.json
+package.csv
+packrat
+params.yml
+/*.R
+shinymaptool
+templates
+wiki

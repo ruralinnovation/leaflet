@@ -1,0 +1,3 @@
+[submodule "shinymaptool"]
+	path = shinymaptool
+	url = git@github.com:ruralinnovation/shinymaptool.git
