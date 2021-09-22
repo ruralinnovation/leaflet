@@ -11,7 +11,10 @@ module.exports = function (grunt) {
           {
             expand: true,
             cwd: "javascript/src",
-            src: ["**/*.js"],
+            src: [
+                "**/*.js",
+                "shinymaptool/map/*.js"
+            ],
             dest: "inst/htmlwidgets/sources",
             ext: ".js",
           },
@@ -46,6 +49,14 @@ module.exports = function (grunt) {
         },
       },
     },
+    copy: {
+      files: {
+        cwd: "shinymaptool/inst/src/styles",  // set working folder / root to copy
+        src: "**/*.css",           // copy all files and subfolders
+        dest: "inst/htmlwidgets/lib/shinymaptool",    // destination folder
+        expand: true           // required when using cwd
+      }
+    },
     eslint: {
       target: ["./javascript/src/*.js"],
     },
@@ -71,10 +82,11 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks("grunt-babel");
   grunt.loadNpmTasks("grunt-browserify");
+  grunt.loadNpmTasks("grunt-contrib-copy");
   grunt.loadNpmTasks("grunt-contrib-watch");
   grunt.loadNpmTasks("grunt-eslint");
   grunt.loadNpmTasks("grunt-mocha-test");
 
   grunt.registerTask("default", ["watch"]);
-  grunt.registerTask("build", ["babel", "browserify", "eslint", "mochaTest"]);
+  grunt.registerTask("build", ["babel", "copy", "browserify", "eslint", "mochaTest"]);
 };

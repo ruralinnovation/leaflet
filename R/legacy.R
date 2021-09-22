@@ -93,7 +93,7 @@ createLeafletMap <- function(session, outputId) {
 #' @export
 leafletMap <- function(
   outputId, width, height,
-  initialTileLayer = "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  initialTileLayer = "", # "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   initialTileLayerAttribution = NULL,
   options = NULL) {
 

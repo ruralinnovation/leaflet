@@ -35,18 +35,27 @@ export default class LayerManager {
   }
 
   addLayer(layer, category, layerId, group, ctGroup, ctKey) {
+    window.console.log("addLayer(", layer, category, layerId, group, ctGroup, ctKey, ")");
+    
     // Was a group provided?
     let hasId = typeof(layerId) === "string";
     let grouped = typeof(group) === "string";
+    window.console.log("grouped", grouped);
 
     let stamp = L.Util.stamp(layer) + "";
+    window.console.log("stamp", stamp);
+    
+    const layer_group = L.layerGroup();
+    
+    window.console.log("layer_group", layer_group);
+    window.console.log("layer_group.addTo(", this._map, ")");
 
     // This will be the default layer group to add the layer to.
     // We may overwrite this let before using it (i.e. if a group is assigned).
     // This one liner creates the _categoryContainers[category] entry if it
     // doesn't already exist.
-    let container = this._categoryContainers[category] =
-        this._categoryContainers[category] || L.layerGroup().addTo(this._map);
+    // let container = this._categoryContainers[category] =
+    //     this._categoryContainers[category] || layer_group.addTo(this._map);
 
     let oldLayer = null;
     if (hasId) {
@@ -60,110 +69,147 @@ export default class LayerManager {
       // Update layerId index
       this._byLayerId[prefixedLayerId] = layer;
     }
+    
+    window.console.log("map.addLayer(", layer, ")");
+    // this._map.addLayer(layer);
+    // layer.addTo(this._map);
+    
+    window.console.log(typeof this._map.addSource);
+    window.console.log(this._map.addSource);
+    window.console.log("this._map.addSource(\"wms-test-source\"", {
+      "type": "raster",
+      // use the tiles option to specify a WMS tile source URL
+      // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/
+      "tiles": [
+        "https://img.nj.gov/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=Natural2015"
+      ],
+      "tileSize": 256
+    }, ")");
 
-    // Update group index
-    if (grouped) {
-      this._byGroup[group] = this._byGroup[group] || {};
-      this._byGroup[group][stamp] = layer;
+    // https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg
+    this._map.addSource("wms-test-source", {
+      "type": "raster",
+      // use the tiles option to specify a WMS tile source URL
+      // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/
+      "tiles": [
+        "https://img.nj.gov/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=Natural2015"
+      ],
+      "tileSize": 256
+    });
 
-      // Since a group is assigned, don't add the layer to the category's layer
-      // group; instead, use the group's layer group.
-      // This one liner creates the _groupContainers[group] entry if it doesn't
-      // already exist.
-      container = this.getLayerGroup(group, true);
-    }
+    this._map.addLayer(
+      {
+        "id": "wms-test-layer",
+        "type": "raster",
+        "source": "wms-test-source",
+        "paint": {}
+      },
+      "aeroway-line"
+    );
 
-    // Update category index
-    this._byCategory[category] = this._byCategory[category] || {};
-    this._byCategory[category][stamp] = layer;
-
-    // Update stamp index
-    let layerInfo = this._byStamp[stamp] = {
-      layer: layer,
-      group: group,
-      ctGroup: ctGroup,
-      ctKey: ctKey,
-      layerId: layerId,
-      category: category,
-      container: container,
-      hidden: false
-    };
-
-    // Update crosstalk group index
-    if (ctGroup) {
-      if (layer.setStyle) {
-        // Need to save this info so we know what to set opacity to later
-        layer.options.origOpacity = typeof(layer.options.opacity) !== "undefined" ? layer.options.opacity : 0.5;
-        layer.options.origFillOpacity = typeof(layer.options.fillOpacity) !== "undefined" ? layer.options.fillOpacity : 0.2;
-      }
-
-      let ctg = this._byCrosstalkGroup[ctGroup];
-      if (!ctg) {
-        ctg = this._byCrosstalkGroup[ctGroup] = {};
-        let crosstalk = global.crosstalk;
-
-        let handleFilter = (e) => {
-          if (!e.value) {
-            let groupKeys = Object.keys(ctg);
-            for (let i = 0; i < groupKeys.length; i++) {
-              let key = groupKeys[i];
-              let layerInfo = this._byStamp[ctg[key]];
-              this._setVisibility(layerInfo, true);
-            }
-          } else {
-            let selectedKeys = {};
-            for (let i = 0; i < e.value.length; i++) {
-              selectedKeys[e.value[i]] = true;
-            }
-            let groupKeys = Object.keys(ctg);
-            for (let i = 0; i < groupKeys.length; i++) {
-              let key = groupKeys[i];
-              let layerInfo = this._byStamp[ctg[key]];
-              this._setVisibility(layerInfo, selectedKeys[groupKeys[i]]);
-            }
-          }
-        };
-        let filterHandle = new crosstalk.FilterHandle(ctGroup);
-        filterHandle.on("change", handleFilter);
-
-        let handleSelection = (e) => {
-          if (!e.value || !e.value.length) {
-            let groupKeys = Object.keys(ctg);
-            for (let i = 0; i < groupKeys.length; i++) {
-              let key = groupKeys[i];
-              let layerInfo = this._byStamp[ctg[key]];
-              this._setOpacity(layerInfo, 1.0);
-            }
-          } else {
-            let selectedKeys = {};
-            for (let i = 0; i < e.value.length; i++) {
-              selectedKeys[e.value[i]] = true;
-            }
-            let groupKeys = Object.keys(ctg);
-            for (let i = 0; i < groupKeys.length; i++) {
-              let key = groupKeys[i];
-              let layerInfo = this._byStamp[ctg[key]];
-              this._setOpacity(layerInfo, selectedKeys[groupKeys[i]] ? 1.0 : 0.2);
-            }
-          }
-        };
-        let selHandle = new crosstalk.SelectionHandle(ctGroup);
-        selHandle.on("change", handleSelection);
-
-        setTimeout(() => {
-          handleFilter({value: filterHandle.filteredKeys});
-          handleSelection({value: selHandle.value});
-        }, 100);
-      }
-
-      if (!ctg[ctKey])
-        ctg[ctKey] = [];
-      ctg[ctKey].push(stamp);
-    }
-
-    // Add to container
-    if (!layerInfo.hidden)
-      container.addLayer(layer);
+    // // Update group index
+    // if (grouped) {
+    //   this._byGroup[group] = this._byGroup[group] || {};
+    //   this._byGroup[group][stamp] = layer;
+    //
+    //   // Since a group is assigned, don't add the layer to the category's layer
+    //   // group; instead, use the group's layer group.
+    //   // This one liner creates the _groupContainers[group] entry if it doesn't
+    //   // already exist.
+    //   container = this.getLayerGroup(group, true);
+    // }
+    //
+    // // Update category index
+    // this._byCategory[category] = this._byCategory[category] || {};
+    // this._byCategory[category][stamp] = layer;
+    //
+    // // Update stamp index
+    // let layerInfo = this._byStamp[stamp] = {
+    //   layer: layer,
+    //   group: group,
+    //   ctGroup: ctGroup,
+    //   ctKey: ctKey,
+    //   layerId: layerId,
+    //   category: category,
+    //   container: container,
+    //   hidden: false
+    // };
+    //
+    // // Update crosstalk group index
+    // if (ctGroup) {
+    //   if (layer.setStyle) {
+    //     // Need to save this info so we know what to set opacity to later
+    //     layer.options.origOpacity = typeof(layer.options.opacity) !== "undefined" ? layer.options.opacity : 0.5;
+    //     layer.options.origFillOpacity = typeof(layer.options.fillOpacity) !== "undefined" ? layer.options.fillOpacity : 0.2;
+    //   }
+    //
+    //   let ctg = this._byCrosstalkGroup[ctGroup];
+    //   if (!ctg) {
+    //     ctg = this._byCrosstalkGroup[ctGroup] = {};
+    //     let crosstalk = global.crosstalk;
+    //
+    //     let handleFilter = (e) => {
+    //       if (!e.value) {
+    //         let groupKeys = Object.keys(ctg);
+    //         for (let i = 0; i < groupKeys.length; i++) {
+    //           let key = groupKeys[i];
+    //           let layerInfo = this._byStamp[ctg[key]];
+    //           this._setVisibility(layerInfo, true);
+    //         }
+    //       } else {
+    //         let selectedKeys = {};
+    //         for (let i = 0; i < e.value.length; i++) {
+    //           selectedKeys[e.value[i]] = true;
+    //         }
+    //         let groupKeys = Object.keys(ctg);
+    //         for (let i = 0; i < groupKeys.length; i++) {
+    //           let key = groupKeys[i];
+    //           let layerInfo = this._byStamp[ctg[key]];
+    //           this._setVisibility(layerInfo, selectedKeys[groupKeys[i]]);
+    //         }
+    //       }
+    //     };
+    //     let filterHandle = new crosstalk.FilterHandle(ctGroup);
+    //     filterHandle.on("change", handleFilter);
+    //
+    //     let handleSelection = (e) => {
+    //       if (!e.value || !e.value.length) {
+    //         let groupKeys = Object.keys(ctg);
+    //         for (let i = 0; i < groupKeys.length; i++) {
+    //           let key = groupKeys[i];
+    //           let layerInfo = this._byStamp[ctg[key]];
+    //           this._setOpacity(layerInfo, 1.0);
+    //         }
+    //       } else {
+    //         let selectedKeys = {};
+    //         for (let i = 0; i < e.value.length; i++) {
+    //           selectedKeys[e.value[i]] = true;
+    //         }
+    //         let groupKeys = Object.keys(ctg);
+    //         for (let i = 0; i < groupKeys.length; i++) {
+    //           let key = groupKeys[i];
+    //           let layerInfo = this._byStamp[ctg[key]];
+    //           this._setOpacity(layerInfo, selectedKeys[groupKeys[i]] ? 1.0 : 0.2);
+    //         }
+    //       }
+    //     };
+    //     let selHandle = new crosstalk.SelectionHandle(ctGroup);
+    //     selHandle.on("change", handleSelection);
+    //
+    //     setTimeout(() => {
+    //       handleFilter({value: filterHandle.filteredKeys});
+    //       handleSelection({value: selHandle.value});
+    //     }, 100);
+    //   }
+    //
+    //   if (!ctg[ctKey])
+    //     ctg[ctKey] = [];
+    //   ctg[ctKey].push(stamp);
+    // }
+    //
+    // // Add to container
+    // if (!layerInfo.hidden)
+    //   container.addLayer(layer);
 
     return oldLayer;
   }

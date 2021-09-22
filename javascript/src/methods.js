@@ -53,8 +53,13 @@ methods.setView = function(center, zoom, options) {
 };
 
 methods.fitBounds = function(lat1, lng1, lat2, lng2, options) {
+  window.console.log("fitBounds([" + [lat1, lng1] + ", " +  [lat1, lng1] + "], options)");
+  // If using CartoMapbox map, then lat/long need to be reversed...
+  // this.fitBounds([
+  //   [lat1, lng1], [lat2, lng2]
+  // ], options);
   this.fitBounds([
-    [lat1, lng1], [lat2, lng2]
+    [lng1, lat1], [lng2, lat2]
   ], options);
 };
 
@@ -109,7 +114,12 @@ methods.clearPopups = function() {
 };
 
 methods.addTiles = function(urlTemplate, layerId, group, options) {
-  this.layerManager.addLayer(L.tileLayer(urlTemplate, options), "tile", layerId, group);
+  window.console.log("addLayer(L.tileLayer(" + urlTemplate + ", " + JSON.stringify(options) + "), \"tile\", " + layerId + "," + group + ")");
+  if (typeof urlTemplate === "string" && urlTemplate.length > 0) {
+    this.layerManager._map.addLayer(L.tileLayer("https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg", options), "tile", layerId, group);
+  } else {
+    this.layerManager._map.changeBasemap("streets-v11"); // "mapbox://styles/ruralinno/cjyhquqe607y91cmjkhg30fa4" ... requires correct MapBox api key
+  }
 };
 
 methods.removeTiles = function(layerId) {

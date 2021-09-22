@@ -1,3 +1,17 @@
+leaflet 2.0.3.9-1
+--------------------------------------------------------------------------------
+
+BREAKING CHANGES
+*
+
+FEATURES
+* First version of R leaflet with CORI/RISI Shiny Map Tools
+
+BUG FIXES and IMPROVEMENTS
+*
+
+
+
 leaflet 2.0.3.9000
 --------------------------------------------------------------------------------
 

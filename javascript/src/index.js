@@ -3,6 +3,8 @@ import L from "./global/leaflet";
 import Shiny from "./global/shiny";
 import HTMLWidgets from "./global/htmlwidgets";
 
+import CartoMapbox from "./shinymaptool/map/carto-mapbox";
+
 import { log } from "./util";
 import { getCRS } from "./crs_utils";
 
@@ -24,6 +26,9 @@ let methods = window.LeafletWidget.methods = $.extend({}, defaultMethods);
 window.LeafletWidget.DataFrame = DataFrame;
 window.LeafletWidget.ClusterLayerStore = ClusterLayerStore;
 window.LeafletWidget.utils.getCRS = getCRS;
+
+window.L.originalMap = window.L.map;
+window.L.map = CartoMapbox.createMap;
 
 // Send updated bounds back to app. Takes a leaflet event object as input.
 function updateBounds(map) {
@@ -110,10 +115,18 @@ HTMLWidgets.widget({
           map = (function () { return; })(); // undefine map
         }
 
-        if(data.options.mapFactory && typeof data.options.mapFactory === "function") {
+        window.console.log(el);
+        window.console.log(data);
+
+        if (data.options.mapFactory && typeof data.options.mapFactory === "function") {
           map = data.options.mapFactory(el, data.options);
         } else {
+          window.console.log(L);
+          window.console.log(L.map);
+          window.console.log(L.originalMap);
           map = L.map(el, data.options);
+          // map = L.originalMap(el, data.options);
+          // window.console.log("leaflet-map", map);
         }
 
         preventUnintendedZoomOnScroll(map);

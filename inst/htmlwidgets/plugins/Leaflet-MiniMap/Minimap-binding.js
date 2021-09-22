@@ -11,7 +11,7 @@ LeafletWidget.methods.addMiniMap =
 
       // determin the tiles for the minimap
       // default to OSM tiles
-      layer = new L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+      // layer = new L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
       if(tilesProvider) {
         // use a custom tiles provider if specified.
         layer = new L.tileLayer.provider(tilesProvider);

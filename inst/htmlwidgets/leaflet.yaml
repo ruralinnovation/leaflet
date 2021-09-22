@@ -26,3 +26,7 @@ dependencies:
     version: 1.3.1 # match leaflet version
     src: "htmlwidgets/lib/rstudio_leaflet"
     stylesheet: rstudio_leaflet.css
+  - name: shinymaptool
+    version: 1.0.210922433 # match shiny map tool version
+    src: "htmlwidgets/lib/shinymaptool"
+    stylesheet: styles.css

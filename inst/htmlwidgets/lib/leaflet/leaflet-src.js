@@ -4686,6 +4686,7 @@ var Control = Class.extend({
 	// @method addTo(map: Map): this
 	// Adds the control to the given map.
 	addTo: function (map) {
+		window.console.log("Control.addTo(", map, ")");
 		this.remove();
 		this._map = map;
 
@@ -4896,6 +4897,7 @@ var Layers = Control.extend({
 	},
 
 	addTo: function (map) {
+		window.console.log("Layers.addTo(", map, ")");
 		Control.prototype.addTo.call(this, map);
 		// Trigger expand after Layers Control has been inserted into DOM so that is now has an actual height.
 		return this._expandIfNotCollapsed();
@@ -6426,6 +6428,7 @@ var Layer = Evented.extend({
 	 * Adds the layer to the given map or layer group.
 	 */
 	addTo: function (map) {
+		window.console.log("Layer.addTo(", map, ")");
 		map.addLayer(this);
 		return this;
 	},
